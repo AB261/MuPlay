@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginStart="@dimen/margin_height"
+    android:layout_marginLeft="@dimen/margin_height"
+    android:orientation="vertical">
+    <CheckBox
+        android:layout_marginTop="@dimen/margin_height"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/auto_play"
+        android:text="@string/auto_play"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:layout_marginBottom="@dimen/margin_height"
+        />
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Shuffle"
+        android:text="@string/shuffle"
+        android:textAppearance="?android:textAppearanceMedium"/>
+
+</LinearLayout>

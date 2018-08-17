@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MuPlay</string>
+    <string name="Unknown_author">Unknown Author</string>
+    <string name="exit_music_player">Exit Music Player</string>
+    <string name="auto_play">Auto Play</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="settings">Settings</string>
+</resources>
