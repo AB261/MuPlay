@@ -22,6 +22,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -118,21 +119,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
     }
 
-    /*@Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case 9999:
-                Uri columnuri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                Log.i("Test", "Column Uri" + columnuri);
-                musicUri = data.getData();
-                Uri newuri = Uri.parse(musicUri.toString());
-                Log.i("Test", "New Uri" + newuri);
-                Log.i("Test", "Result URI " + data.getData());
-                break;
-
-        }
-
-    }*/
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -153,15 +139,12 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
 
-// MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
-// app-defined int constant
+
 
                 return;
             }
         }
-        /*Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        i.addCategory(Intent.CATEGORY_DEFAULT);
-        startActivityForResult(Intent.createChooser(i, "Choose directory"), 9999);*/
+
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         listView = findViewById(R.id.listview);
         controller = new MusicController(this);
@@ -207,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     protected void onStart() {
         super.onStart();
+        Log.v("MainActivity", "OnStart");
         if (intent == null) {
 
             intent = new Intent(this, MusicService.class);
@@ -220,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     protected void onStop() {
         controller.hide();
+        Log.v("MainActivity", "OnStop");
         audioManager.abandonAudioFocus(audioFocusChangeListener);
         super.onStop();
     }
@@ -247,11 +232,13 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     protected void onDestroy() {
         stopService(intent);
+        Log.v("MainActivity", "OnDestroy");
         if (musicBound)
             unbindService(musicConnection);
         musicService = null;
         audioManager.abandonAudioFocus(audioFocusChangeListener);
         super.onDestroy();
+
     }
 
 
@@ -280,14 +267,22 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         if (paused) {
             setController();
             paused = false;
+            playback_paused = false;
         }
+        if (musicService != null) {
+            musicService.go();
+        }
+        Log.v("MainActivity", "OnResume");
     }
 
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).registerReceiver(onPreparereceiver, new IntentFilter("Paused"));
-
+        Log.v("MainActivity", "Paused");
+        playback_paused = true;
+        paused = true;
         super.onPause();
+        controller.show(0);
 
     }
 
@@ -320,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     public void pause() {
         musicService.pausePlayer();
         playback_paused = true;
+        controller.show(0);
 
 
     }
