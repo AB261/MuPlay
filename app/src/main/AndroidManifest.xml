@@ -37,9 +37,6 @@
         </activity>
 
 
-
-
-
         <service android:name="com.example.android.musicplayer.MusicService"/>
 
 

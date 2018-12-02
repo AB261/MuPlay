@@ -1,6 +1,7 @@
 package com.example.android.musicplayer;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -20,20 +21,25 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.MediaController;
+import android.widget.Toast;
 
 import com.example.android.musicplayer.MusicService.MusicBinder;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MediaController.MediaPlayerControl {
+public class MainActivity extends AppCompatActivity implements MediaController.MediaPlayerControl, GestureDetector.OnGestureListener {
 
     public MusicController controller;
     Settings settings;
@@ -44,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     private boolean paused = true;
     private boolean playback_paused = false;
     private boolean musicBound = false;
+    private static final String DEBUG_TAG = "Gestures";
+    private GestureDetectorCompat mDetector;
     private BroadcastReceiver onPreparereceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -100,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         if (musicUri != null) {
             Cursor musicCursor;
             musicCursor = musicResolver.query(musicUri, null, MediaStore.Audio.Media.DATA + " like ?", new String[]{"%Music%"}, null);
+            //musicCursor = musicResolver.query(musicUri, null, null, null, null);
             if (musicCursor != null && musicCursor.moveToFirst()) {
                 int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
                 int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
@@ -120,13 +129,15 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     }
 
 
-
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.song_list);
-        ListView listView;
+
+
+        final ListView listView;
         settings = new Settings();
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("MuPlay");
@@ -139,8 +150,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
 
-
-
                 return;
             }
         }
@@ -151,8 +160,26 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         songs = new ArrayList<>();
         getSongList();
         setController();
-        SongAdapter songAdapter = new SongAdapter(this, songs);
+        final SongAdapter songAdapter = new SongAdapter(this, songs);
         listView.setAdapter(songAdapter);
+        final SwipeDetector swipeDetector = new SwipeDetector();
+        listView.setOnTouchListener(swipeDetector);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (true) {
+                    Log.i("MainActivity", "Swipe Detected");
+                    int pos = Integer.parseInt(view.getTag().toString());
+                    songs.remove(pos);
+
+                    songAdapter.notifyDataSetChanged();
+                } else {
+                    Log.i("MainActivity", "Click Detected");
+                }
+            }
+
+        });
+        mDetector = new GestureDetectorCompat(this, this);
 
 
     }
@@ -282,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         playback_paused = true;
         paused = true;
         super.onPause();
-        controller.show(0);
+//        controller.show(0);
 
     }
 
@@ -323,6 +350,12 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     public void onBackPressed() { // a function in MainActivity
         moveTaskToBack(true);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -375,5 +408,41 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     public int getAudioSessionId() {
         return 0;
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        Toast.makeText(this, "onDown", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+        Toast.makeText(this, "ShowPress", Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        Toast.makeText(this, "SingleTapUp", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        Toast.makeText(this, "onScroll", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+        Toast.makeText(this, "onLongPress", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        Toast.makeText(this, "Fling Detected", Toast.LENGTH_SHORT).show();
+        Log.d("MainActivity", "onFling:\n " + e1.toString() + "\n " + e2.toString());
+        return false;
     }
 }
